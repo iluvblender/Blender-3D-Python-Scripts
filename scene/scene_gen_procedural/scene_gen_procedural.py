@@ -1,76 +1,89 @@
-__author__ = 'Satish Goda <satishgoda@live.com>'
-
 import bpy
+from mathutils import Vector
 
+##### Clean-up results from an earlier run of the script
 
-def deselect_all():
-    vl = bpy.context.view_layer
-    for obj in bpy.context.view_layer.objects:
-        obj.select_set(False, view_layer=vl)
+# Delete previously created collection if present
 
-## Create a new collection
-coll = bpy.data.collections.new("shapes2")
+collectionName = 'MyCollection'
+if collectionName in bpy.data.collections:
+    bpy.data.collections.remove(bpy.data.collections[collectionName])
 
-## Link the new collection to the scene collection
-bpy.context.scene.collection.children.link(coll)
+# Helper code. Is this part of the standard API?
+def garbage_collect():
+    found_garbage = True
+    while found_garbage:
+        found_garbage = False
+        for things in [ bpy.data.collections,
+                        bpy.data.meshes,
+                        bpy.data.objects,
+                        bpy.data.materials,
+                        bpy.data.textures,
+                        bpy.data.images ]:
+            for block in things:
+                if block.users == 0:
+                    things.remove(block)
+                    found_garbage = True
 
-## Get the index of the new collection
-coll_index = bpy.context.scene.collection.children.find(coll.name)
+# Garbage collect so that objects which became orphaned when
+# deleting the collection actually disappear.
+#
+# Note that the names of meshes, objects, ... must be unique in blender.
+# Calling, e.g., bpy.data.materials.new('MyMaterial') will name
+# the new material MyMaterial.001, MyMaterial.002 if MyMaterial
+# already existed.
+# Running this script several times would create materials with
+# those names if we did not call garbage collect here.
 
-## Create a null object (known as EMPTY in Blender)
-bpy.ops.object.add()
+garbage_collect()
 
-## Move the null object to the new collection
-bpy.ops.object.move_to_collection(collection_index=coll_index+1)
+##### Create a simple scene
 
-## Save a handle to the null object
-null_obj = bpy.context.active_object
+# Create new material
+myMaterial = bpy.data.materials.new('MyMaterial')
 
-## Increase the size of the null object display size
-null_obj.empty_display_size = 3
+# Create mesh using that material
+myMesh = bpy.data.meshes.new('MyMesh')
+myMesh.materials.append(myMaterial)
 
-## Create a Cube mesh object
-bpy.ops.mesh.primitive_cube_add()
+# Add vertices and faces to mesh
+#
+# A potential bug:
+# Note that you would expect that the three edges
+# specified below should be the three line segments
+# connecting the origin to each of the three vertices
+# of the triangle - but there seems to be a bug and
+# only two of those edges appear.
+myMesh.from_pydata(
+    [ Vector([1,0,0]), # Vertices
+      Vector([0,1,0]),
+      Vector([0,0,1]),
+      Vector([0,0,0])],
+    [ (0,3),           # Edges
+      (1,3),
+      (2,3) ],
+    [ (0,1,2) ])       # Faces
 
-## Link to collection
-bpy.ops.object.move_to_collection(collection_index=coll_index+1)
+# Create object using that mesh
+myObject = bpy.data.objects.new('MyObject', myMesh)
 
-## Handle
-mesh_obj = bpy.context.active_object
+# A subtle note:
+# Note that we can change the mesh later with
+# myOtherMesh = bpy.data.meshes.new('MyOtherMesh')
+# myObject.data = myOtherMesh
+#
+# However, we cannot create an empty object and then
+# attach a mesh to it later, so the following code will fail:
+# myObject = bpy.data.objects.new('MyObject', None)
+# myObject.data = myMesh
+# Is there a way to change the type of an object later or
+# specify the type as mesh when calling bpy.data.objects.new without
+# giving a mesh?
 
-## Parenting
-mesh_obj.parent = null_obj
+# Create collection using that object
+myCollection = bpy.data.collections.new(collectionName)
+myCollection.objects.link(myObject)
 
-## Make sure everything else is deselected
-null_obj.select_set(False)
-
-## Select the mesh to which we are going to add a material
-mesh_obj.select_set(True)
-
-## Create a material slot for the mes
-bpy.ops.object.material_slot_add()
-
-## Create the material
-greenMtl = bpy.data.materials.new('green')
-
-## Set the diffuse color
-greenMtl.diffuse_color[0] = 0
-greenMtl.diffuse_color[1] = 1
-greenMtl.diffuse_color[2] = 0
-
-## Get the first material slot
-slot = mesh_obj.material_slots[0]
-
-## You can link the material to the object or its data
-slot.link = 'OBJECT'
-#slot.link = 'DATA'
-
-## Link the material to the slot
-slot.material = greenMtl
-
-## Select the null object only
-deselect_all()
-bpy.context.view_layer.objects.active = null_obj
-null_obj.select_set(True)
-
+# Add collection to scene collection
+bpy.context.scene.collection.children.link(myCollection)
 
