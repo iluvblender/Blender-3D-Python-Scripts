@@ -21,7 +21,7 @@ def garbage_collect():
                         bpy.data.textures,
                         bpy.data.images ]:
             for block in things:
-                if block.users == 0:
+                if block.users == 0 and block.use_fake_user == False:
                     things.remove(block)
                     found_garbage = True
 
