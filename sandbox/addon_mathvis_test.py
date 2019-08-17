@@ -5,6 +5,8 @@ mod = bpy.data.texts['mathviz1.py'].as_module()
 exec(mod.code)
 loc = sum((bb0, bb4, bb7, bb3), Vector((0, 0, 0))) * 0.25
 bpy.ops.object.empty_add(location=loc)
+bpy.ops.object.empty_add(location=loc, 
+                          rotation=mtx.decompose()[1].to_euler())
 """
 
 import bpy
