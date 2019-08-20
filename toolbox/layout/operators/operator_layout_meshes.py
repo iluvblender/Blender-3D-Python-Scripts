@@ -1,10 +1,19 @@
 import bpy
+from bpy.props import FloatProperty
 
 
 class LayoutMeshesOperator(bpy.types.Operator):
     """Lays out selected Mesh objects on the X-axis"""
     bl_idname = "object.layout_meshes"
     bl_label = "Layout Mesh objects on X-axis"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    gap: FloatProperty(
+        name='Gap',
+        description="Extra gap between meshes",
+        min=0.0, max=10,
+        default=0.25
+    )
 
     @classmethod
     def poll(cls, context):
@@ -16,16 +25,17 @@ class LayoutMeshesOperator(bpy.types.Operator):
 
     def execute(self, context):
         ao = context.active_object
+        selected_objects = context.selected_objects
+        index = selected_objects.index(ao)
+        selected_objects.pop(index)
 
-        other_objects = set(context.selected_objects) - set([ao])
 
-        gap = 0.0
-        offset = ao.dimensions.x/2.0 + gap
+        offset = ao.dimensions.x/2.0 + self.gap
 
-        for obj in other_objects:
+        for obj in selected_objects:
             adjust = obj.dimensions.x/2.0 
             obj.location.x = offset + adjust
-            offset = obj.location.x + adjust + gap
+            offset = obj.location.x + adjust + self.gap
 
         return {'FINISHED'}
 
