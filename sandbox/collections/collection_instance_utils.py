@@ -2,6 +2,10 @@ import bpy
 from mathutils import Vector
 
 
+def get_dimensions(objects):
+        return map(lambda obj: obj.dimensions, objects)    
+
+
 def get_combined_dimensions():
     scene_object = bpy.context.active_object
 
@@ -10,8 +14,7 @@ def get_combined_dimensions():
 
     instance_objects = scene_object.instance_collection.objects
 
-    bboxes = map(lambda obj: obj.bound_box,instance_objects)
-    dims = map(lambda obj: obj.dimensions, instance_objects)
+    dims = get_dimensions(instance_objects)
 
     dim_combined = Vector(map(max, zip(*dims)))
     
