@@ -12,7 +12,7 @@ class LayoutMeshesOperator(bpy.types.Operator):
         name='Gap',
         description="Extra gap between meshes",
         min=0.0, max=10,
-        default=0.25
+        default=0.0
     )
 
     @classmethod
@@ -29,13 +29,11 @@ class LayoutMeshesOperator(bpy.types.Operator):
         index = selected_objects.index(ao)
         selected_objects.pop(index)
 
-
-        offset = ao.dimensions.x/2.0 + self.gap
+        offset = ao.bound_box[4][0] + self.gap
 
         for obj in selected_objects:
-            adjust = obj.dimensions.x/2.0 
-            obj.location.x = offset + adjust
-            offset = obj.location.x + adjust + self.gap
+            obj.location.x = offset + abs(obj.bound_box[0][0])
+            offset = obj.location.x + abs(obj.bound_box[4][0]) + self.gap
 
         return {'FINISHED'}
 
