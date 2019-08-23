@@ -7,9 +7,11 @@ def custom_object_context_menu(self, context):
 
 
 if not hasattr(bpy.types.VIEW3D_MT_object_context_menu, 'draw_funcs'):
-    bpy.types.VIEW3D_MT_object_context_menu.draw_funcs = []
-    bpy.types.VIEW3D_MT_object_context_menu.draw_funcs.append(bpy.types.VIEW3D_MT_object_context_menu.draw)
+    draw_funcs = bpy.types.VIEW3D_MT_object_context_menu.draw_funcs = []
+    draw_default = bpy.types.VIEW3D_MT_object_context_menu.draw
+    draw_funcs.append(draw_default)
     bpy.types.VIEW3D_MT_object_context_menu.draw = custom_object_context_menu
-    
 else:
-    bpy.types.VIEW3D_MT_object_context_menu.draw = bpy.types.VIEW3D_MT_object_context_menu.draw_funcs[0]
+    draw_default = bpy.types.VIEW3D_MT_object_context_menu.draw_funcs[0]
+    bpy.types.VIEW3D_MT_object_context_menu.draw = draw_default
+    delattr(bpy.types.VIEW3D_MT_object_context_menu, 'draw_funcs')
