@@ -44,7 +44,8 @@ def make_bounding_box(x: CoordinateExtents,
         (x.max, y.max, z.min),
     )
 
-    coords = tuple(map(Vector, pairs_xyz))
+#    coords = tuple(map(Vector, pairs_xyz))
+    coords = pairs_xyz
     return coords
     
 
@@ -55,7 +56,7 @@ ao = bpy.context.active_object
 mesh = ao.data
 
 vertices = map(lambda vtx: ao.matrix_world @ vtx.co, mesh.vertices)
-xs, ys, zs = tuple(zip(*vertices))
+xs, ys, zs = zip(*vertices)
 
 extent_x = bbox_utils.CoordinateExtents.create_from(xs)
 extent_y = bbox_utils.CoordinateExtents.create_from(ys)
@@ -63,10 +64,9 @@ extent_z = bbox_utils.CoordinateExtents.create_from(zs)
 
 points = bbox_utils.make_bounding_box(extent_x, extent_y, extent_z)
 for index, point in enumerate(points):
-    exec("bb_{0} = point".format(index))
+    exec("bb_{0} = Vector(point)".format(index))
 
 del point
 del index
 del points
 """
-
