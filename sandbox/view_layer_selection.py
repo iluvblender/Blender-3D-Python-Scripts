@@ -14,25 +14,30 @@ def notify_test(*args):
 
     selection_tracker = handle.selection_tracker
 
-    if not context.view_layer.objects.active:
+    active = context.view_layer.objects.active
+
+    # If there is nothing active
+    if not active:
+        # Remove the previously tracked selection
+        selection_tracker = []
+        print("Nothing is selected")
         return
 
-    print("Notify changed!")
+    selected = list(context.view_layer.objects.selected)
 
-    if not context.view_layer.objects.active in selection_tracker:
-        if not selection_tracker:
-            selection_tracker.append(context.view_layer.objects.active)
-        else:
-            selection_tracker[0] = context.view_layer.objects.active
+    if selected:
+        # The selected objects list also contains the active object
+        selected.remove(active)
+ 
+    if not selection_tracker:
+        selection_tracker.append(active)
+    else:
+        selection_tracker[0] = active
 
-    if not context.view_layer.objects.selected:
+    if not selected:
         selection_tracker = selection_tracker[0:1]
         print(selection_tracker)
         return
-    
-    selected = list(context.view_layer.objects.selected)
-
-    selected.remove(context.view_layer.objects.active)
     
     new_objects = set(selected) - set(selection_tracker[1:])
     objects_to_remove = set(selection_tracker[1:]) - set(selected)
@@ -40,10 +45,12 @@ def notify_test(*args):
     for o in objects_to_remove:
         selection_tracker.remove(o)
 
-    for o in selected:
+    for o in reversed(selected):
         if o in new_objects:
             selection_tracker.append(o)
-
+    
+    selection_tracker = [selection_tracker[0]] + list(reversed(selection_tracker[1:]))
+    
     print(selection_tracker)
 
 
