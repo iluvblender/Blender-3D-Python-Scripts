@@ -17,9 +17,14 @@ class MicrobitSerialPortTimerOperator(bpy.types.Operator):
 
         if event.type == 'TIMER':
             # data = self._serial.read_until(serial.CR+serial.LF)
-            data = self._serial.readline().decode()
-            if data.strip():
-                print(data)
+            data = self._serial.readline().decode().strip()
+            if not data:
+                return {'PASS_THROUGH'}
+            print(data)
+            if data == 'A is Pressed':
+                context.active_object.location.x +=1
+            elif data == 'B is Pressed':
+                context.active_object.location.x -=1
 
         return {'PASS_THROUGH'}
 
