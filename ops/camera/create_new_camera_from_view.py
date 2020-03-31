@@ -8,12 +8,6 @@ def main(context):
 
     bpy.ops.object.camera_add(enter_editmode=False, align='VIEW', location=(0, 0, 0), rotation=(0, -0, 0))
 
-#    area = None
-#    for area in C.screen.areas:
-#        if area.type == 'VIEW_3D':
-#            area = area
-#            break
-
     v3d = context.area.spaces[0]
 
     camera = C.active_object
@@ -23,11 +17,6 @@ def main(context):
     
     C.scene.camera = camera
 
-#    override = {
-#        'area': context.area
-#    }
-    
-#    bpy.ops.view3d.view_camera(override)
     bpy.ops.view3d.view_camera()
     
 
@@ -45,17 +34,23 @@ class CreateNewCameraFromViewOperator(bpy.types.Operator):
         main(context)
         return {'FINISHED'}
 
+def menu_func(self, context):
+    self.layout.separator()
+    self.layout.operator(
+        CreateNewCameraFromViewOperator.bl_idname,
+        text=CreateNewCameraFromViewOperator.bl_label,
+        icon='PLUGIN')
 
 def register():
     bpy.utils.register_class(CreateNewCameraFromViewOperator)
+    bpy.types.VIEW3D_MT_add.append(menu_func)
 
 
 def unregister():
+    bpy.types.VIEW3D_MT_add.remove(menu_func)
     bpy.utils.unregister_class(CreateNewCameraFromViewOperator)
 
 
 if __name__ == "__main__":
     register()
 
-    # test call
-    bpy.ops.object.camera_create_from_view()
