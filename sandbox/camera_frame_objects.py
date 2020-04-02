@@ -31,38 +31,41 @@ for area in bpy.context.screen.areas:
     found = True
     
     v3d = area.spaces[0]
+    v3d.region_3d.view_perspective = 'CAMERA'
     camera.matrix_local = v3d.region_3d.view_matrix.inverted()
     camera.data.lens = v3d.region_3d.view_camera_zoom
     #v3d.camera = camera
     #v3d.use_local_camera = True
     area = area
+    area.tag_redraw()
+    window = bpy.context.window
     screen = bpy.context.screen
+    region = area.regions[5]
+    print(region.type)
 
 bpy.ops.view3d.camera_to_view_selected()
 
 bpy.ops.object.select_all(action='DESELECT')
 
-## Not working as expected
-
 view_layer.objects.active = camera
 view_layer.objects.active.select_set(True, view_layer=view_layer)
 
-orient_matrix = camera.matrix_world.inverted().to_3x3()
+#if found:
+#    ctx = {}
+#    ctx.update((
+#            ('active_object', camera),
+#            ('space_data',v3d),
+#            ('screen', screen),
+#            ('window', window),
+#            ('region', region),
+#        ))
+#    bpy.ops.view3d.view_camera(ctx)
 
-bpy.ops.transform.translate(value=(0, 0, -2), 
-                            orient_type='LOCAL', 
-                            orient_matrix=orient_matrix, 
-                            orient_matrix_type='LOCAL', 
-                            constraint_axis=(False, False, True), 
-                            )
+#orient_matrix = camera.matrix_world.inverted().to_3x3()
 
-
-## Not working as expected
-if False and found:
-    ctx = bpy.context.copy()
-    ctx['space_data'] = v3d
-    ctx['screen'] = screen
-    ctx['area'] = area
-    
-    bpy.ops.view3d.view_camera(override=ctx)
-
+#bpy.ops.transform.translate(value=(0, 0, -2), 
+#                            orient_type='LOCAL', 
+#                            orient_matrix=orient_matrix, 
+#                            orient_matrix_type='LOCAL', 
+#                            constraint_axis=(False, False, True), 
+#                            )
